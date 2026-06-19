@@ -70,8 +70,10 @@ To replace mock data with a real provider: subclass `DashboardDataProvider`, imp
 
 ### Frontend
 
-- `frontend/src/App.tsx` — Entire dashboard UI in a single component file: filter bar, KPI cards, ECharts charts, ranking table, insights, and detail tabs. There is intentionally no component decomposition yet.
-- `frontend/src/api.ts` — Thin fetch wrapper. Reads `VITE_API_BASE_URL` (defaults to `/api`). Exports `getFilterOptions`, `getOverview`, `exportReport`, and `defaultFilters` (the initial filter state used by `App.tsx`).
+- `frontend/src/App.tsx` — Shell: sidebar navigation, `activePage` state, renders `OverviewPage` or `CodeMergePage`. Add new pages here.
+- `frontend/src/pages/OverviewPage.tsx` — Entire overview dashboard: filter bar, KPI cards, ECharts charts, ranking table, insights, detail tabs.
+- `frontend/src/pages/CodeMergePage.tsx` — Code merge analysis page: 5 KPI cards, PDU stacked bar, trend line, repo Top 10, contributor scatter, paginated/sortable MR table.
+- `frontend/src/api.ts` — Thin fetch wrapper. Reads `VITE_API_BASE_URL` (defaults to `/api`). Exports `getFilterOptions`, `getOverview`, `exportReport`, `getCodeMergeOverview`, `getCodeMergeMrs`, and default filter objects.
 - `frontend/src/types.ts` — TypeScript interfaces that mirror `backend/app/schemas.py`. **Keep these in sync when changing API contracts.**
 - `frontend/src/styles.css` — All component styling; no CSS framework is used.
 - `frontend/vite.config.ts` — Vite + React plugin; proxies `/api` to `http://127.0.0.1:8000` during development.

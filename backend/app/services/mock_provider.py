@@ -166,19 +166,26 @@ class MockDashboardDataProvider(DashboardDataProvider):
         ]
 
     def get_codemerge_overview(self, filters: CodeMergeFilters) -> CodeMergeOverview:
+        # ai_assisted counts vary by threshold so the selector has visible effect
+        threshold_data = {
+            30: (1324, 71.7, "+8.2pp"),
+            50: (892,  48.3, "+6.1pp"),
+            70: (421,  22.8, "+3.4pp"),
+        }
+        ai_assisted_mrs, ai_assisted_ratio, ai_assisted_ratio_change = threshold_data[filters.ai_ratio_threshold]
         return CodeMergeOverview(
             kpis=CodeMergeKpi(
                 total_ai_lines=2_456_892,
                 total_lines=7_842_314,
                 overall_ai_ratio=31.3,
                 total_mrs=1847,
-                ai_assisted_mrs=892,
-                ai_assisted_ratio=48.3,
+                ai_assisted_mrs=ai_assisted_mrs,
+                ai_assisted_ratio=ai_assisted_ratio,
                 total_repos=127,
                 ai_lines_change="+24.3%",
                 ai_ratio_change="+4.5pp",
                 mr_count_change="+18.2%",
-                ai_assisted_ratio_change="+6.1pp",
+                ai_assisted_ratio_change=ai_assisted_ratio_change,
             ),
             pdu_breakdown=[
                 PduMergeStats(pdu="无线PDU", total_lines=2_456_000, ai_lines=904_000, ai_ratio=36.8, mr_count=524, active_contributors=186),
