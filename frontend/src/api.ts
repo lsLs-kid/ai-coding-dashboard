@@ -8,6 +8,7 @@ import type {
   FilterOptions,
   MrPageRequest,
   MrPageResponse,
+  OperationsOverview,
   TokenPageRequest,
   TokenPageResponse,
 } from "./types";
@@ -136,4 +137,11 @@ export function getCostTokens(req: TokenPageRequest): Promise<TokenPageResponse>
     sort_order: req.sort_order,
   });
   return request<TokenPageResponse>(`/cost/tokens?${params.toString()}`);
+}
+
+export function getOperationsOverview(filters: DashboardFilters): Promise<OperationsOverview> {
+  return request<OperationsOverview>("/operations/overview", {
+    method: "POST",
+    body: JSON.stringify(filters),
+  });
 }
