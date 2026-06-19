@@ -113,6 +113,8 @@ class TokenDetail(BaseModel):
     id: str
     date: str
     user: str
+    pdu: str
+    lm_team: str
     model: str
     input_tokens: int
     output_tokens: int
@@ -215,3 +217,70 @@ class MrPageResponse(BaseModel):
     page: int
     page_size: int
     items: list[MrDetail]
+
+
+# ── Cost Analysis ───────────────────────────────────────────────────────────
+
+class CostFilters(DashboardFilters):
+    cost_type: Literal["input", "output", "total"] = "total"
+
+
+class CostKpi(BaseModel):
+    total_tokens: int
+    input_tokens: int
+    output_tokens: int
+    per_user_tokens: float
+    total_tokens_change: str
+    input_tokens_change: str
+    output_tokens_change: str
+    per_user_tokens_change: str
+
+
+class CostTrendPoint(BaseModel):
+    date: str
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+
+
+class ModelCostStats(BaseModel):
+    model: str
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+
+
+class PduCostStats(BaseModel):
+    pdu: str
+    total_tokens: int
+
+
+class CostOverview(BaseModel):
+    kpis: CostKpi
+    trend: list[CostTrendPoint]
+    model_distribution: list[ModelCostStats]
+    top_pdus: list[PduCostStats]
+
+
+class TokenPageRequest(BaseModel):
+    date_range: str = "last_30_days"
+    granularity: Literal["day", "week", "month"] = "day"
+    pdu: str = "all"
+    lm_team: str = "all"
+    user: str = "all"
+    terminal_type: str = "all"
+    client_version: str = "all"
+    ide_type: str = "all"
+    model: str = "all"
+    cost_type: int = 0  # 0=total, 1=input, 2=output; int for GET query coercion
+    page: int = 1
+    page_size: int = 20
+    sort_by: str = "date"
+    sort_order: Literal["asc", "desc"] = "desc"
+
+
+class TokenPageResponse(BaseModel):
+    total: int
+    page: int
+    page_size: int
+    items: list[TokenDetail]
