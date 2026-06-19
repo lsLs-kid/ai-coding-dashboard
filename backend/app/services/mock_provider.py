@@ -2,7 +2,6 @@ from app.schemas import (
     CodeMergeFilters,
     CodeMergeKpi,
     CodeMergeOverview,
-    ContributorMergeStats,
     DashboardFilters,
     DashboardOverview,
     ExportReportResponse,
@@ -14,6 +13,7 @@ from app.schemas import (
     MrDetail,
     MrPageRequest,
     MrPageResponse,
+    MrRatioBucket,
     PduMergeStats,
     QuadrantPoint,
     RankingRow,
@@ -196,7 +196,7 @@ class MockDashboardDataProvider(DashboardDataProvider):
             ],
             trend=self._codemerge_trend(),
             top_repos=self._top_repos(),
-            contributors=self._contributors(),
+            mr_ratio_distribution=self._mr_ratio_distribution(),
         )
 
     def get_codemerge_mrs(self, request: MrPageRequest) -> MrPageResponse:
@@ -252,25 +252,21 @@ class MockDashboardDataProvider(DashboardDataProvider):
         ]
         return [RepoMergeStats(repository=r[0], mr_count=r[1], total_lines=r[2], ai_lines=r[3], ai_ratio=r[4]) for r in rows]
 
-    def _contributors(self) -> list[ContributorMergeStats]:
-        rows = [
-            ("张三", "无线PDU", 18, 34820, 12842, 36.9),
-            ("李四", "软件PDU", 14, 26320,  8731, 33.2),
-            ("王五", "协议栈PDU", 11, 18160, 6542, 36.0),
-            ("赵六", "驱动PDU",   9, 15240,  5231, 34.3),
-            ("孙七", "测试PDU",   7, 12840,  4112, 32.0),
-            ("周八", "无线PDU",  15, 28640, 10234, 35.7),
-            ("吴九", "软件PDU",  12, 22180,  7124, 32.1),
-            ("郑十", "协议栈PDU", 8, 16420,  5432, 33.1),
-            ("陈一", "驱动PDU",  11, 19820,  6234, 31.5),
-            ("林二", "测试PDU",   6, 10640,  3124, 29.4),
-            ("黄三", "无线PDU",  20, 38240, 14982, 39.2),
-            ("冯四", "软件PDU",   9, 17640,  5824, 33.0),
-            ("袁五", "协议栈PDU",13, 23840,  8124, 34.1),
-            ("许六", "驱动PDU",   7, 13280,  4012, 30.2),
-            ("曹七", "无线PDU",  16, 30480, 11824, 38.8),
-        ]
-        return [ContributorMergeStats(name=r[0], pdu=r[1], mr_count=r[2], total_lines=r[3], ai_lines=r[4], ai_ratio=r[5]) for r in rows]
+    def _mr_ratio_distribution(self) -> list[MrRatioBucket]:
+        buckets = {"0–20%": 0, "20–40%": 0, "40–60%": 0, "60–80%": 0, "80–100%": 0}
+        for mr in self._mr_list():
+            r = mr.ai_mr_ratio
+            if r < 20:
+                buckets["0–20%"] += 1
+            elif r < 40:
+                buckets["20–40%"] += 1
+            elif r < 60:
+                buckets["40–60%"] += 1
+            elif r < 80:
+                buckets["60–80%"] += 1
+            else:
+                buckets["80–100%"] += 1
+        return [MrRatioBucket(label=k, count=v) for k, v in buckets.items()]
 
     def _mr_list(self) -> list[MrDetail]:
         pdus    = ["无线PDU",   "软件PDU",   "协议栈PDU", "驱动PDU",   "测试PDU"]
@@ -278,11 +274,22 @@ class MockDashboardDataProvider(DashboardDataProvider):
         repos   = ["wireless/baseband","platform/runtime","protocol/stack","driver/kernel","qa/framework",
                    "wireless/modem",   "platform/sdk",    "driver/display","protocol/mac", "qa/integration"]
         authors = ["张三","李四","王五","赵六","孙七","周八","吴九","郑十"]
+        # Varied ratios that produce a realistic distribution across 5 buckets
+        ratios = [
+            8.4, 14.2, 17.8, 12.6, 9.1, 16.3, 11.7, 18.9,           # 0–20%:  8
+            21.4, 34.7, 28.3, 36.9, 25.1, 38.2, 22.8, 31.6,
+            29.4, 33.8, 27.2, 35.5, 24.9, 32.1, 26.7, 37.4,
+            30.8, 23.5, 28.9, 35.1, 22.4, 34.3,                      # 20–40%: 22
+            41.2, 53.8, 47.6, 56.1, 44.3, 58.9, 42.7, 49.4,
+            51.8, 45.2, 55.3, 48.7, 43.9, 52.4,                      # 40–60%: 14
+            62.4, 71.8, 67.3, 74.1, 69.5,                            # 60–80%:  5
+            83.7, 91.2,                                               # 80–100%: 2 (total=51, trim last)
+        ]
         rows = []
         for i in range(50):
             idx = i % 5
             total = max(1000, 34820 - i * 520)
-            ratio = round(max(10.0, 36.9 - i * 0.3), 1)
+            ratio = ratios[i]
             ai = int(total * ratio / 100)
             rows.append(MrDetail(
                 mr_id=f"MR-{10291 - i}",

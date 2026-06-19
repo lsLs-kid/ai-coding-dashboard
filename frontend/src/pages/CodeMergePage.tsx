@@ -5,7 +5,7 @@ import { defaultCodeMergeFilters, getCodeMergeMrs, getCodeMergeOverview, getFilt
 import type {
   CodeMergeFilters,
   CodeMergeOverview,
-  ContributorMergeStats,
+  MrRatioBucket,
   FilterOptions,
   MergeTrendPoint,
   MrPageResponse,
@@ -194,11 +194,11 @@ export function CodeMergePage({ onUpdatedAt }: { onUpdatedAt: (t: string) => voi
             <article className="panel">
               <div className="panel-header">
                 <h2>
-                  开发者贡献分布<span className="info-dot">i</span>
+                  MR AI 占比分布<span className="info-dot">i</span>
                 </h2>
               </div>
               <ReactECharts
-                option={contributorScatterOption(overview.contributors)}
+                option={mrRatioDistributionOption(overview.mr_ratio_distribution)}
                 notMerge
                 style={{ height: 220 }}
               />
@@ -535,45 +535,45 @@ function repoBarOption(topRepos: RepoMergeStats[]) {
   };
 }
 
-function contributorScatterOption(contributors: ContributorMergeStats[]) {
-  const pdus = [...new Set(contributors.map((c) => c.pdu))];
-  const colors = ["#256ff6", "#10b99a", "#ef3445", "#f5a623", "#9b59b6"];
+function mrRatioDistributionOption(distribution: MrRatioBucket[]) {
+  const barColors = ["#c6d9fc", "#7aaaf5", "#4d85f5", "#1d5fdf", "#0a3fa8"];
   return {
+    grid: { left: 48, right: 20, top: 36, bottom: 42 },
     tooltip: {
-      formatter: (params: { data: [number, number, number, string] }) =>
-        `${params.data[3]}<br/>总代码行：${params.data[0].toLocaleString()}<br/>AI占比：${params.data[1]}%<br/>MR数：${params.data[2]}`,
+      trigger: "axis",
+      formatter: (params: { name: string; value: number }[]) =>
+        `AI占比 ${params[0].name}<br/>MR 数：${params[0].value}`,
     },
-    legend: { data: pdus, bottom: 0, textStyle: baseTextStyle() },
-    grid: { left: 58, right: 20, top: 16, bottom: 40 },
     textStyle: baseTextStyle(),
     xAxis: {
-      type: "value",
-      name: "总代码行数",
-      splitLine: { lineStyle: { color: "#e8edf5" } },
+      type: "category",
+      data: distribution.map((d) => d.label),
+      axisTick: { show: false },
+      name: "AI 代码占比区间",
+      nameLocation: "middle",
+      nameGap: 28,
     },
     yAxis: {
       type: "value",
-      name: "AI占比（%）",
-      min: 0,
-      max: 50,
+      name: "MR 数",
       splitLine: { lineStyle: { color: "#e8edf5" } },
     },
-    series: pdus.map((pdu, i) => ({
-      name: pdu,
-      type: "scatter",
-      symbolSize: (val: number[]) => Math.max(10, Math.min(36, val[2] * 2)),
-      data: contributors
-        .filter((c) => c.pdu === pdu)
-        .map((c) => [c.total_lines, c.ai_ratio, c.mr_count, c.name]),
-      itemStyle: { color: colors[i % colors.length] },
-      label: {
-        show: true,
-        formatter: (p: { data: [number, number, number, string] }) => p.data[3],
-        position: "top",
-        fontSize: 10,
-        color: "#27344c",
+    series: [
+      {
+        type: "bar",
+        data: distribution.map((d, i) => ({
+          value: d.count,
+          itemStyle: { color: barColors[i % barColors.length], borderRadius: [4, 4, 0, 0] },
+        })),
+        barCategoryGap: "12%",
+        label: {
+          show: true,
+          position: "top",
+          formatter: (p: { value: number }) => (p.value > 0 ? String(p.value) : ""),
+          fontSize: 12,
+          color: "#44556a",
+        },
       },
-      labelLayout: { hideOverlap: true },
-    })),
+    ],
   };
 }

@@ -185,13 +185,9 @@ class RepoMergeStats(BaseModel):
     ai_ratio: float
 
 
-class ContributorMergeStats(BaseModel):
-    name: str
-    pdu: str
-    mr_count: int
-    total_lines: int
-    ai_lines: int
-    ai_ratio: float
+class MrRatioBucket(BaseModel):
+    label: str   # e.g. "0–20%"
+    count: int
 
 
 class CodeMergeOverview(BaseModel):
@@ -199,7 +195,7 @@ class CodeMergeOverview(BaseModel):
     pdu_breakdown: list[PduMergeStats]
     trend: list[MergeTrendPoint]
     top_repos: list[RepoMergeStats]
-    contributors: list[ContributorMergeStats]
+    mr_ratio_distribution: list[MrRatioBucket]
 
 
 class MrPageRequest(BaseModel):

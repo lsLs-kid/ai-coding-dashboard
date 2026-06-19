@@ -177,13 +177,9 @@ export interface RepoMergeStats {
   ai_ratio: number;
 }
 
-export interface ContributorMergeStats {
-  name: string;
-  pdu: string;
-  mr_count: number;
-  total_lines: number;
-  ai_lines: number;
-  ai_ratio: number;
+export interface MrRatioBucket {
+  label: string;
+  count: number;
 }
 
 export interface CodeMergeOverview {
@@ -191,7 +187,7 @@ export interface CodeMergeOverview {
   pdu_breakdown: PduMergeStats[];
   trend: MergeTrendPoint[];
   top_repos: RepoMergeStats[];
-  contributors: ContributorMergeStats[];
+  mr_ratio_distribution: MrRatioBucket[];
 }
 
 export interface MrPageRequest {
