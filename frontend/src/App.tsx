@@ -1,23 +1,23 @@
 import { useState } from "react";
 import { Bell, Box, Code2, Database, Home, LineChart, RefreshCcw, Settings, Users, WalletCards } from "lucide-react";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { CodeMergePage } from "./pages/CodeMergePage";
 import { OverviewPage } from "./pages/OverviewPage";
 
-type Page = "overview" | "codemerge";
-
-const navItems: { label: string; icon: React.ComponentType<{ size?: number }>; page: Page | null }[] = [
-  { label: "概览", icon: Home, page: "overview" },
-  { label: "运营分析", icon: LineChart, page: null },
-  { label: "团队分析", icon: Users, page: null },
-  { label: "用户分析", icon: Box, page: null },
-  { label: "成本分析", icon: WalletCards, page: null },
-  { label: "代码入库分析", icon: Database, page: "codemerge" },
-  { label: "告警中心", icon: Bell, page: null },
-  { label: "设置", icon: Settings, page: null },
+const navItems: { label: string; icon: React.ComponentType<{ size?: number }>; path: string | null }[] = [
+  { label: "概览", icon: Home, path: "/" },
+  { label: "运营分析", icon: LineChart, path: null },
+  { label: "团队分析", icon: Users, path: null },
+  { label: "用户分析", icon: Box, path: null },
+  { label: "成本分析", icon: WalletCards, path: null },
+  { label: "代码入库分析", icon: Database, path: "/code-merge" },
+  { label: "告警中心", icon: Bell, path: null },
+  { label: "设置", icon: Settings, path: null },
 ];
 
 export function App() {
-  const [activePage, setActivePage] = useState<Page>("overview");
+  const navigate = useNavigate();
+  const location = useLocation();
   const [updatedAt, setUpdatedAt] = useState("--");
 
   return (
@@ -30,10 +30,8 @@ export function App() {
           {navItems.map((item) => (
             <button
               key={item.label}
-              className={`nav-item${activePage === item.page ? " is-active" : ""}`}
-              onClick={() => {
-                if (item.page) setActivePage(item.page);
-              }}
+              className={`nav-item${item.path === location.pathname ? " is-active" : ""}`}
+              onClick={() => { if (item.path) navigate(item.path); }}
             >
               <item.icon size={18} />
               <span>{item.label}</span>
@@ -47,8 +45,10 @@ export function App() {
         </div>
       </aside>
       <main className="dashboard">
-        {activePage === "overview" && <OverviewPage onUpdatedAt={setUpdatedAt} />}
-        {activePage === "codemerge" && <CodeMergePage onUpdatedAt={setUpdatedAt} />}
+        <Routes>
+          <Route path="/" element={<OverviewPage onUpdatedAt={setUpdatedAt} />} />
+          <Route path="/code-merge" element={<CodeMergePage onUpdatedAt={setUpdatedAt} />} />
+        </Routes>
       </main>
     </div>
   );
