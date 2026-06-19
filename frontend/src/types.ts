@@ -127,3 +127,88 @@ export interface DashboardOverview {
   mrs: MrDetail[];
   tokens: TokenDetail[];
 }
+
+// ── Code Merge Analysis ─────────────────────────────────────────────────────
+
+export interface CodeMergeFilters {
+  date_range: string;
+  granularity: "day" | "week" | "month";
+  pdu: string;
+  lm_team: string;
+  ai_ratio_threshold: 30 | 50 | 70;
+}
+
+export interface CodeMergeKpi {
+  total_ai_lines: number;
+  total_lines: number;
+  overall_ai_ratio: number;
+  total_mrs: number;
+  ai_assisted_mrs: number;
+  ai_assisted_ratio: number;
+  total_repos: number;
+  ai_lines_change: string;
+  ai_ratio_change: string;
+  mr_count_change: string;
+  ai_assisted_ratio_change: string;
+}
+
+export interface PduMergeStats {
+  pdu: string;
+  total_lines: number;
+  ai_lines: number;
+  ai_ratio: number;
+  mr_count: number;
+  active_contributors: number;
+}
+
+export interface MergeTrendPoint {
+  date: string;
+  total_lines: number;
+  ai_lines: number;
+  ai_ratio: number;
+  mr_count: number;
+}
+
+export interface RepoMergeStats {
+  repository: string;
+  mr_count: number;
+  total_lines: number;
+  ai_lines: number;
+  ai_ratio: number;
+}
+
+export interface ContributorMergeStats {
+  name: string;
+  pdu: string;
+  mr_count: number;
+  total_lines: number;
+  ai_lines: number;
+  ai_ratio: number;
+}
+
+export interface CodeMergeOverview {
+  kpis: CodeMergeKpi;
+  pdu_breakdown: PduMergeStats[];
+  trend: MergeTrendPoint[];
+  top_repos: RepoMergeStats[];
+  contributors: ContributorMergeStats[];
+}
+
+export interface MrPageRequest {
+  date_range: string;
+  granularity: "day" | "week" | "month";
+  pdu: string;
+  lm_team: string;
+  ai_ratio_threshold: 30 | 50 | 70;
+  page: number;
+  page_size: number;
+  sort_by: string;
+  sort_order: "asc" | "desc";
+}
+
+export interface MrPageResponse {
+  total: number;
+  page: number;
+  page_size: number;
+  items: MrDetail[];
+}
