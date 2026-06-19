@@ -1,11 +1,15 @@
 from abc import ABC, abstractmethod
 
 from app.schemas import (
+    CodeMergeFilters,
+    CodeMergeOverview,
     DashboardFilters,
     DashboardOverview,
     ExportReportResponse,
     FilterOptions,
     MrDetail,
+    MrPageRequest,
+    MrPageResponse,
     TokenDetail,
     UserDetail,
 )
@@ -40,4 +44,12 @@ class DashboardDataProvider(ABC):
 
     @abstractmethod
     def export_report(self, filters: DashboardFilters) -> ExportReportResponse:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_codemerge_overview(self, filters: CodeMergeFilters) -> CodeMergeOverview:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_codemerge_mrs(self, request: MrPageRequest) -> MrPageResponse:
         raise NotImplementedError
