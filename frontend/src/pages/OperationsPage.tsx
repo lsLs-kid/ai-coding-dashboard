@@ -126,7 +126,7 @@ export function OperationsPage({ onUpdatedAt }: { onUpdatedAt: (t: string) => vo
               label="用户问题单总数"
               value={overview.kpis.total_user_issues.toLocaleString()}
               change={overview.kpis.total_user_issues_change}
-              accent="red"
+              accent="amber"
               iconIdx={3}
             />
           </section>
@@ -210,7 +210,7 @@ function KpiCard({
   label: string;
   value: string;
   change: string;
-  accent: "blue" | "cyan" | "green" | "red";
+  accent: "blue" | "cyan" | "green" | "amber";
   iconIdx: number;
 }) {
   const Icon = kpiIcons[iconIdx] ?? BarChart3;
@@ -262,7 +262,20 @@ function toolCallTopOption(items: { tool_name: string; call_count: number }[]) {
       {
         type: "bar",
         data: items.map((i) => i.call_count).reverse(),
-        itemStyle: { color: "#3b82f6", borderRadius: [0, 4, 4, 0] },
+        itemStyle: {
+          color: {
+            type: "linear",
+            x: 0,
+            y: 0,
+            x2: 1,
+            y2: 0,
+            colorStops: [
+              { offset: 0, color: "#6366f1" },
+              { offset: 1, color: "#8b5cf6" },
+            ],
+          },
+          borderRadius: [0, 4, 4, 0],
+        },
       },
     ],
   };
@@ -291,7 +304,7 @@ function toolCallTrendOption(trend: { date: string; value: number }[]) {
   return lineTrendOption(
     trend.map((t) => t.date),
     trend.map((t) => t.value),
-    "#10b981",
+    "#14b8a6",
   );
 }
 
@@ -299,7 +312,7 @@ function aiAdoptionTrendOption(trend: { date: string; value: number }[]) {
   return lineTrendOption(
     trend.map((t) => t.date),
     trend.map((t) => t.value),
-    "#3b82f6",
+    "#4f46e5",
     "%",
   );
 }
@@ -316,11 +329,12 @@ function userIssueTrendOption(trend: { date: string; value: number }[]) {
   return lineTrendOption(
     trend.map((t) => t.date),
     trend.map((t) => t.value),
-    "#ef4444",
+    "#f59e0b",
   );
 }
 
 function userIssuesByTypeOption(items: { issue_type: string; count: number }[]) {
+  const colors = ["#3b82f6", "#6366f1", "#06b6d4", "#14b8a6", "#f59e0b"];
   return {
     tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
     grid: { left: 16, right: 24, top: 24, bottom: 24, containLabel: true },
@@ -329,8 +343,13 @@ function userIssuesByTypeOption(items: { issue_type: string; count: number }[]) 
     series: [
       {
         type: "bar",
-        data: items.map((i) => i.count),
-        itemStyle: { color: "#f59e0b", borderRadius: [4, 4, 0, 0] },
+        data: items.map((i, idx) => ({
+          value: i.count,
+          itemStyle: {
+            color: colors[idx % colors.length],
+            borderRadius: [4, 4, 0, 0],
+          },
+        })),
       },
     ],
   };

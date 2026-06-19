@@ -220,8 +220,8 @@ select {
   pointer-events: none;
 }
 
-.accent-red::before {
-  border-color: rgba(231, 51, 70, 0.38);
+.accent-amber::before {
+  border-color: rgba(245, 158, 11, 0.42);
 }
 
 .kpi-icon {
@@ -233,6 +233,11 @@ select {
   border-radius: 50%;
   color: var(--blue);
   background: #eaf2ff;
+}
+
+.accent-amber .kpi-icon {
+  color: #f59e0b;
+  background: #fff7e6;
 }
 
 .accent-red .kpi-icon {
