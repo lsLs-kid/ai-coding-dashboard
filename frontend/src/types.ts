@@ -113,6 +113,8 @@ export interface TokenDetail {
   total_tokens: number;
   trace_id: string;
   status_code: number;
+  pdu: string;
+  lm_team: string;
 }
 
 export interface DashboardOverview {
@@ -207,4 +209,80 @@ export interface MrPageResponse {
   page: number;
   page_size: number;
   items: MrDetail[];
+}
+
+// ── Cost Analysis ───────────────────────────────────────────────────────────
+
+export interface CostFilters {
+  date_range: string;
+  granularity: "day" | "week" | "month";
+  pdu: string;
+  lm_team: string;
+  user: string;
+  terminal_type: string;
+  client_version: string;
+  ide_type: string;
+  model: string;
+  cost_type: "input" | "output" | "total";
+}
+
+export interface CostKpi {
+  total_tokens: number;
+  input_tokens: number;
+  output_tokens: number;
+  per_user_tokens: number;
+  total_tokens_change: string;
+  input_tokens_change: string;
+  output_tokens_change: string;
+  per_user_tokens_change: string;
+}
+
+export interface CostTrendPoint {
+  date: string;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+}
+
+export interface ModelCostStats {
+  model: string;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+}
+
+export interface PduCostStats {
+  pdu: string;
+  total_tokens: number;
+}
+
+export interface CostOverview {
+  kpis: CostKpi;
+  trend: CostTrendPoint[];
+  model_distribution: ModelCostStats[];
+  top_pdus: PduCostStats[];
+}
+
+export interface TokenPageRequest {
+  date_range: string;
+  granularity: "day" | "week" | "month";
+  pdu: string;
+  lm_team: string;
+  user: string;
+  terminal_type: string;
+  client_version: string;
+  ide_type: string;
+  model: string;
+  cost_type: 0 | 1 | 2;
+  page: number;
+  page_size: number;
+  sort_by: string;
+  sort_order: "asc" | "desc";
+}
+
+export interface TokenPageResponse {
+  total: number;
+  page: number;
+  page_size: number;
+  items: TokenDetail[];
 }
