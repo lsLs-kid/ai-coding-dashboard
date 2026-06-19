@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Bell, Box, Code2, Database, Home, LineChart, RefreshCcw, Settings, Users, WalletCards } from "lucide-react";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { OperationsPage } from "./pages/OperationsPage";
 import { CostPage } from "./pages/CostPage";
 import { CodeMergePage } from "./pages/CodeMergePage";
 import { OverviewPage } from "./pages/OverviewPage";
@@ -58,7 +59,7 @@ export function App() {
         <Routes>
           <Route path="/" element={<OverviewPage onUpdatedAt={setUpdatedAt} />} />
           <Route path="/code-merge" element={<CodeMergePage onUpdatedAt={setUpdatedAt} />} />
-          <Route path="/operations" element={<PlaceholderPage title="运营分析" />} />
+          <Route path="/operations" element={<OperationsPage onUpdatedAt={setUpdatedAt} />} />
           <Route path="/teams" element={<PlaceholderPage title="团队分析" />} />
           <Route path="/users" element={<PlaceholderPage title="用户分析" />} />
           <Route path="/cost" element={<CostPage onUpdatedAt={setUpdatedAt} />} />
