@@ -19,7 +19,7 @@
 
 body {
   margin: 0;
-  min-width: 1440px;
+  min-width: 1480px;
   background: radial-gradient(circle at 70% 0%, #eef5ff 0, #f6f8fb 32%, #f4f7fb 100%);
 }
 
@@ -31,7 +31,7 @@ select {
 .app-shell {
   display: grid;
   min-height: 100vh;
-  grid-template-columns: 148px minmax(1280px, 1fr);
+  grid-template-columns: 180px minmax(1280px, 1fr);
 }
 
 .sidebar {
