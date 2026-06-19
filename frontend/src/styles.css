@@ -634,3 +634,37 @@ td {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Cost Analysis ─────────────────────────────────────────────────────────── */
+
+.cost-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.cost-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.cost-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  align-items: end;
+}
+
+@media (max-width: 1500px) {
+  .cost-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cost-chart-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
