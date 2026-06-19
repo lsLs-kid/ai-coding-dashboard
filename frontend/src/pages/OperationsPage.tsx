@@ -126,7 +126,7 @@ export function OperationsPage({ onUpdatedAt }: { onUpdatedAt: (t: string) => vo
               label="用户问题单总数"
               value={overview.kpis.total_user_issues.toLocaleString()}
               change={overview.kpis.total_user_issues_change}
-              accent="amber"
+              accent="red"
               iconIdx={3}
             />
           </section>
@@ -210,7 +210,7 @@ function KpiCard({
   label: string;
   value: string;
   change: string;
-  accent: "blue" | "cyan" | "green" | "amber";
+  accent: "blue" | "cyan" | "green" | "red";
   iconIdx: number;
 }) {
   const Icon = kpiIcons[iconIdx] ?? BarChart3;
@@ -248,53 +248,58 @@ function ChartPanel({ title, children }: { title: string; children: ReactNode })
   );
 }
 
+function baseTextStyle() {
+  return { fontFamily: "Inter, Microsoft YaHei, system-ui", color: "#24324a" };
+}
+
 function toolCallTopOption(items: { tool_name: string; call_count: number }[]) {
   return {
+    textStyle: baseTextStyle(),
     tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
-    grid: { left: 16, right: 32, top: 16, bottom: 16, containLabel: true },
-    xAxis: { type: "value" },
+    grid: { left: 100, right: 24, top: 16, bottom: 36 },
+    xAxis: { type: "value", splitLine: { lineStyle: { color: "#e8edf5" } } },
     yAxis: {
       type: "category",
       data: items.map((i) => i.tool_name).reverse(),
+      axisTick: { show: false },
       axisLabel: { width: 90, overflow: "truncate" },
     },
     series: [
       {
         type: "bar",
         data: items.map((i) => i.call_count).reverse(),
-        itemStyle: {
-          color: {
-            type: "linear",
-            x: 0,
-            y: 0,
-            x2: 1,
-            y2: 0,
-            colorStops: [
-              { offset: 0, color: "#6366f1" },
-              { offset: 1, color: "#8b5cf6" },
-            ],
-          },
-          borderRadius: [0, 4, 4, 0],
-        },
+        itemStyle: { color: "#10b99a", borderRadius: [0, 4, 4, 0] },
       },
     ],
   };
 }
 
-function lineTrendOption(dates: string[], values: number[], color: string, unit?: string) {
+function lineTrendOption(
+  dates: string[],
+  values: number[],
+  color: string,
+  areaColor: string,
+  unit?: string,
+) {
   return {
+    textStyle: baseTextStyle(),
     tooltip: { trigger: "axis" },
-    grid: { left: 16, right: 24, top: 24, bottom: 24, containLabel: true },
-    xAxis: { type: "category", data: dates, boundaryGap: false },
-    yAxis: { type: "value", axisLabel: { formatter: unit ? `{value}${unit}` : "{value}" } },
+    grid: { left: 48, right: 24, top: 28, bottom: 42 },
+    xAxis: { type: "category", data: dates, axisTick: { show: false } },
+    yAxis: {
+      type: "value",
+      name: unit,
+      splitLine: { lineStyle: { color: "#e8edf5" } },
+    },
     series: [
       {
         type: "line",
         data: values,
         smooth: true,
-        symbol: "none",
-        lineStyle: { color, width: 2 },
-        areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color }, { offset: 1, color: color.replace('rgb', 'rgba').replace(')', ', 0.05)') }] } },
+        symbolSize: 6,
+        lineStyle: { color, width: 3 },
+        itemStyle: { color },
+        areaStyle: { color: areaColor },
       },
     ],
   };
@@ -304,7 +309,8 @@ function toolCallTrendOption(trend: { date: string; value: number }[]) {
   return lineTrendOption(
     trend.map((t) => t.date),
     trend.map((t) => t.value),
-    "#14b8a6",
+    "#256ff6",
+    "rgba(37, 111, 246, .12)",
   );
 }
 
@@ -313,6 +319,7 @@ function aiAdoptionTrendOption(trend: { date: string; value: number }[]) {
     trend.map((t) => t.date),
     trend.map((t) => t.value),
     "#4f46e5",
+    "rgba(79, 70, 229, .12)",
     "%",
   );
 }
@@ -321,7 +328,8 @@ function aiAcceptedLinesTrendOption(trend: { date: string; value: number }[]) {
   return lineTrendOption(
     trend.map((t) => t.date),
     trend.map((t) => t.value),
-    "#06b6d4",
+    "#299be9",
+    "rgba(41, 155, 233, .12)",
   );
 }
 
@@ -329,27 +337,37 @@ function userIssueTrendOption(trend: { date: string; value: number }[]) {
   return lineTrendOption(
     trend.map((t) => t.date),
     trend.map((t) => t.value),
-    "#f59e0b",
+    "#ef3445",
+    "rgba(239, 52, 69, .10)",
   );
 }
 
 function userIssuesByTypeOption(items: { issue_type: string; count: number }[]) {
-  const colors = ["#3b82f6", "#6366f1", "#06b6d4", "#14b8a6", "#f59e0b"];
+  const n = items.length;
   return {
+    textStyle: baseTextStyle(),
     tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
-    grid: { left: 16, right: 24, top: 24, bottom: 24, containLabel: true },
-    xAxis: { type: "category", data: items.map((i) => i.issue_type) },
-    yAxis: { type: "value" },
+    grid: { left: 40, right: 24, top: 28, bottom: 42 },
+    xAxis: {
+      type: "category",
+      data: items.map((i) => i.issue_type),
+      axisTick: { show: false },
+    },
+    yAxis: { type: "value", splitLine: { lineStyle: { color: "#e8edf5" } } },
     series: [
       {
         type: "bar",
-        data: items.map((i, idx) => ({
-          value: i.count,
-          itemStyle: {
-            color: colors[idx % colors.length],
-            borderRadius: [4, 4, 0, 0],
-          },
-        })),
+        data: items.map((d, i) => {
+          const t = n > 1 ? i / (n - 1) : 0;
+          const r = Math.round(37 + t * 100);
+          const g = Math.round(111 + t * 80);
+          const b = Math.round(246 - t * 40);
+          return {
+            value: d.count,
+            itemStyle: { color: `rgb(${r},${g},${b})`, borderRadius: [3, 3, 0, 0] },
+          };
+        }),
+        barCategoryGap: "30%",
       },
     ],
   };
