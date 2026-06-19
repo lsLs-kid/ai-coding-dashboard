@@ -1,4 +1,8 @@
 from app.schemas import (
+    CodeMergeFilters,
+    CodeMergeKpi,
+    CodeMergeOverview,
+    ContributorMergeStats,
     DashboardFilters,
     DashboardOverview,
     ExportReportResponse,
@@ -6,9 +10,14 @@ from app.schemas import (
     FilterOptions,
     Insight,
     KpiMetric,
+    MergeTrendPoint,
     MrDetail,
+    MrPageRequest,
+    MrPageResponse,
+    PduMergeStats,
     QuadrantPoint,
     RankingRow,
+    RepoMergeStats,
     TokenDetail,
     TrendPoint,
     UserDetail,
@@ -155,3 +164,129 @@ class MockDashboardDataProvider(DashboardDataProvider):
             Insight(type="info", title="客户端版本 v2.8.3 错误率偏高", description="较均值高 18%，建议排查并修复插件侧异常。"),
             Insight(type="success", title="软件平台LM 连续 3 周上升", description="AI MR代码入库占比持续提升，建议复制经验。"),
         ]
+
+    def get_codemerge_overview(self, filters: CodeMergeFilters) -> CodeMergeOverview:
+        return CodeMergeOverview(
+            kpis=CodeMergeKpi(
+                total_ai_lines=2_456_892,
+                total_lines=7_842_314,
+                overall_ai_ratio=31.3,
+                total_mrs=1847,
+                ai_assisted_mrs=892,
+                ai_assisted_ratio=48.3,
+                total_repos=127,
+                ai_lines_change="+24.3%",
+                ai_ratio_change="+4.5pp",
+                mr_count_change="+18.2%",
+                ai_assisted_ratio_change="+6.1pp",
+            ),
+            pdu_breakdown=[
+                PduMergeStats(pdu="无线PDU", total_lines=2_456_000, ai_lines=904_000, ai_ratio=36.8, mr_count=524, active_contributors=186),
+                PduMergeStats(pdu="软件PDU", total_lines=1_987_000, ai_lines=658_000, ai_ratio=33.1, mr_count=412, active_contributors=141),
+                PduMergeStats(pdu="协议栈PDU", total_lines=1_542_000, ai_lines=469_000, ai_ratio=30.4, mr_count=318, active_contributors=108),
+                PduMergeStats(pdu="驱动PDU", total_lines=1_287_000, ai_lines=368_000, ai_ratio=28.6, mr_count=284, active_contributors=97),
+                PduMergeStats(pdu="测试PDU", total_lines=570_314, ai_lines=155_000, ai_ratio=27.2, mr_count=209, active_contributors=83),
+            ],
+            trend=self._codemerge_trend(),
+            top_repos=self._top_repos(),
+            contributors=self._contributors(),
+        )
+
+    def get_codemerge_mrs(self, request: MrPageRequest) -> MrPageResponse:
+        all_mrs = self._mr_list()
+        if request.pdu != "all":
+            all_mrs = [m for m in all_mrs if m.pdu == request.pdu]
+        if request.lm_team != "all":
+            all_mrs = [m for m in all_mrs if m.lm_team == request.lm_team]
+        sort_fields = {
+            "merged_at": lambda m: m.merged_at,
+            "ai_mr_ratio": lambda m: m.ai_mr_ratio,
+            "ai_lines": lambda m: m.ai_lines,
+            "total_lines": lambda m: m.total_lines,
+        }
+        key_fn = sort_fields.get(request.sort_by, sort_fields["merged_at"])
+        all_mrs.sort(key=key_fn, reverse=(request.sort_order == "desc"))
+        total = len(all_mrs)
+        start = (request.page - 1) * request.page_size
+        return MrPageResponse(
+            total=total,
+            page=request.page,
+            page_size=request.page_size,
+            items=all_mrs[start : start + request.page_size],
+        )
+
+    def _codemerge_trend(self) -> list[MergeTrendPoint]:
+        dates = [
+            "04-21","04-22","04-23","04-24","04-25","04-26","04-27","04-28","04-29","04-30",
+            "05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10",
+            "05-11","05-12","05-13","05-14","05-15","05-16","05-17","05-18","05-19","05-20",
+        ]
+        ai_lines =    [62000,78000,71000,85000,68000,64000,72000,80000,89000,75000,83000,91000,88000,76000,95000,84000,92000,98000,87000,81000,94000,72000,88000,104000,112000,96000,108000,103000,97000,92000]
+        total_lines = [248000,292000,248000,306000,255000,226000,263000,293000,313000,271000,303000,318000,305000,272000,332000,296000,318000,338000,296000,278000,319000,245000,296000,345000,368000,315000,349000,340000,318000,301000]
+        ratios =      [25.0,26.7,28.6,27.8,26.7,28.3,27.4,27.3,28.4,27.7,27.4,28.6,28.9,27.9,28.6,28.4,28.9,29.0,29.4,29.1,29.5,29.4,29.7,30.1,30.4,30.5,30.9,30.3,30.5,30.6]
+        mr_counts =   [42,55,48,61,51,44,53,58,64,52,60,67,63,55,70,62,68,72,65,58,69,51,63,77,83,70,79,76,72,68]
+        return [
+            MergeTrendPoint(date=d, total_lines=tl, ai_lines=al, ai_ratio=ar, mr_count=mc)
+            for d, tl, al, ar, mc in zip(dates, total_lines, ai_lines, ratios, mr_counts)
+        ]
+
+    def _top_repos(self) -> list[RepoMergeStats]:
+        rows = [
+            ("wireless/baseband", 98, 1_234_000, 487_000, 39.5),
+            ("platform/runtime",  84,   987_000, 368_000, 37.3),
+            ("protocol/stack",    76,   842_000, 312_000, 37.1),
+            ("driver/kernel",     68,   756_000, 268_000, 35.4),
+            ("qa/framework",      54,   489_000, 168_000, 34.4),
+            ("wireless/modem",    49,   432_000, 145_000, 33.6),
+            ("platform/sdk",      43,   378_000, 124_000, 32.8),
+            ("driver/display",    38,   312_000,  98_000, 31.4),
+            ("protocol/mac",      34,   278_000,  86_000, 30.9),
+            ("qa/integration",    29,   234_000,  70_000, 29.9),
+        ]
+        return [RepoMergeStats(repository=r[0], mr_count=r[1], total_lines=r[2], ai_lines=r[3], ai_ratio=r[4]) for r in rows]
+
+    def _contributors(self) -> list[ContributorMergeStats]:
+        rows = [
+            ("张三", "无线PDU", 18, 34820, 12842, 36.9),
+            ("李四", "软件PDU", 14, 26320,  8731, 33.2),
+            ("王五", "协议栈PDU", 11, 18160, 6542, 36.0),
+            ("赵六", "驱动PDU",   9, 15240,  5231, 34.3),
+            ("孙七", "测试PDU",   7, 12840,  4112, 32.0),
+            ("周八", "无线PDU",  15, 28640, 10234, 35.7),
+            ("吴九", "软件PDU",  12, 22180,  7124, 32.1),
+            ("郑十", "协议栈PDU", 8, 16420,  5432, 33.1),
+            ("陈一", "驱动PDU",  11, 19820,  6234, 31.5),
+            ("林二", "测试PDU",   6, 10640,  3124, 29.4),
+            ("黄三", "无线PDU",  20, 38240, 14982, 39.2),
+            ("冯四", "软件PDU",   9, 17640,  5824, 33.0),
+            ("袁五", "协议栈PDU",13, 23840,  8124, 34.1),
+            ("许六", "驱动PDU",   7, 13280,  4012, 30.2),
+            ("曹七", "无线PDU",  16, 30480, 11824, 38.8),
+        ]
+        return [ContributorMergeStats(name=r[0], pdu=r[1], mr_count=r[2], total_lines=r[3], ai_lines=r[4], ai_ratio=r[5]) for r in rows]
+
+    def _mr_list(self) -> list[MrDetail]:
+        pdus    = ["无线PDU",   "软件PDU",   "协议栈PDU", "驱动PDU",   "测试PDU"]
+        teams   = ["架构与算法LM","软件平台LM","协议栈LM",  "驱动开发LM","测试验证LM"]
+        repos   = ["wireless/baseband","platform/runtime","protocol/stack","driver/kernel","qa/framework",
+                   "wireless/modem",   "platform/sdk",    "driver/display","protocol/mac", "qa/integration"]
+        authors = ["张三","李四","王五","赵六","孙七","周八","吴九","郑十"]
+        rows = []
+        for i in range(50):
+            idx = i % 5
+            total = max(1000, 34820 - i * 520)
+            ratio = round(max(10.0, 36.9 - i * 0.3), 1)
+            ai = int(total * ratio / 100)
+            rows.append(MrDetail(
+                mr_id=f"MR-{10291 - i}",
+                repository=repos[i % 10],
+                author=authors[i % 8],
+                pdu=pdus[idx],
+                lm_team=teams[idx],
+                merged_at=f"2025-05-{max(1, 20 - i // 5):02d} {max(0, 10 - i % 5):02d}:42",
+                total_lines=total,
+                ai_lines=ai,
+                ai_mr_ratio=ratio,
+                status="merged",
+            ))
+        return rows
