@@ -536,9 +536,9 @@ function repoBarOption(topRepos: RepoMergeStats[]) {
 }
 
 function mrRatioDistributionOption(distribution: MrRatioBucket[]) {
-  const barColors = ["#c6d9fc", "#7aaaf5", "#4d85f5", "#1d5fdf", "#0a3fa8"];
+  const n = distribution.length;
   return {
-    grid: { left: 48, right: 20, top: 36, bottom: 42 },
+    grid: { left: 48, right: 20, top: 36, bottom: 52 },
     tooltip: {
       trigger: "axis",
       formatter: (params: { name: string; value: number }[]) =>
@@ -549,9 +549,7 @@ function mrRatioDistributionOption(distribution: MrRatioBucket[]) {
       type: "category",
       data: distribution.map((d) => d.label),
       axisTick: { show: false },
-      name: "AI 代码占比区间",
-      nameLocation: "middle",
-      nameGap: 28,
+      axisLabel: { rotate: 30, fontSize: 11 },
     },
     yAxis: {
       type: "value",
@@ -561,16 +559,22 @@ function mrRatioDistributionOption(distribution: MrRatioBucket[]) {
     series: [
       {
         type: "bar",
-        data: distribution.map((d, i) => ({
-          value: d.count,
-          itemStyle: { color: barColors[i % barColors.length], borderRadius: [4, 4, 0, 0] },
-        })),
-        barCategoryGap: "12%",
+        data: distribution.map((d, i) => {
+          const t = n > 1 ? i / (n - 1) : 0;
+          const r = Math.round(220 - t * 160);
+          const g = Math.round(232 - t * 160);
+          const b = Math.round(254 - t * 100);
+          return {
+            value: d.count,
+            itemStyle: { color: `rgb(${r},${g},${b})`, borderRadius: [3, 3, 0, 0] },
+          };
+        }),
+        barCategoryGap: "10%",
         label: {
           show: true,
           position: "top",
           formatter: (p: { value: number }) => (p.value > 0 ? String(p.value) : ""),
-          fontSize: 12,
+          fontSize: 11,
           color: "#44556a",
         },
       },

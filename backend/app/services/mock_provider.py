@@ -253,19 +253,10 @@ class MockDashboardDataProvider(DashboardDataProvider):
         return [RepoMergeStats(repository=r[0], mr_count=r[1], total_lines=r[2], ai_lines=r[3], ai_ratio=r[4]) for r in rows]
 
     def _mr_ratio_distribution(self) -> list[MrRatioBucket]:
-        buckets = {"0–20%": 0, "20–40%": 0, "40–60%": 0, "60–80%": 0, "80–100%": 0}
+        buckets = {f"{i * 10}–{(i + 1) * 10}%": 0 for i in range(10)}
         for mr in self._mr_list():
-            r = mr.ai_mr_ratio
-            if r < 20:
-                buckets["0–20%"] += 1
-            elif r < 40:
-                buckets["20–40%"] += 1
-            elif r < 60:
-                buckets["40–60%"] += 1
-            elif r < 80:
-                buckets["60–80%"] += 1
-            else:
-                buckets["80–100%"] += 1
+            idx = min(int(mr.ai_mr_ratio // 10), 9)
+            buckets[f"{idx * 10}–{(idx + 1) * 10}%"] += 1
         return [MrRatioBucket(label=k, count=v) for k, v in buckets.items()]
 
     def _mr_list(self) -> list[MrDetail]:
