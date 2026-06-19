@@ -1,4 +1,6 @@
 from app.schemas import (
+    AiAcceptedLinesTrendPoint,
+    AiAdoptionTrendPoint,
     CodeMergeFilters,
     CodeMergeKpi,
     CodeMergeOverview,
@@ -19,6 +21,8 @@ from app.schemas import (
     MrPageRequest,
     MrPageResponse,
     MrRatioBucket,
+    OperationsKpi,
+    OperationsOverview,
     PduCostStats,
     PduMergeStats,
     QuadrantPoint,
@@ -27,8 +31,12 @@ from app.schemas import (
     TokenDetail,
     TokenPageRequest,
     TokenPageResponse,
+    ToolCallTopItem,
+    ToolCallTrendPoint,
     TrendPoint,
     UserDetail,
+    UserIssueByType,
+    UserIssueTrendPoint,
 )
 from app.services.provider import DashboardDataProvider
 
@@ -322,6 +330,87 @@ class MockDashboardDataProvider(DashboardDataProvider):
             page_size=request.page_size,
             items=all_tokens[start : start + request.page_size],
         )
+
+    def get_operations_overview(self, filters: DashboardFilters) -> OperationsOverview:
+        return OperationsOverview(
+            kpis=OperationsKpi(
+                ai_adoption_rate=78.5,
+                ai_adoption_rate_change="+3.2pp",
+                ai_accepted_lines=1_245_600,
+                ai_accepted_lines_change="+18.4%",
+                total_tool_calls=856_432,
+                total_tool_calls_change="+12.7%",
+                total_user_issues=328,
+                total_user_issues_change="-5.3%",
+            ),
+            top_tools=self._top_tools(),
+            tool_call_trend=self._tool_call_trend(),
+            ai_adoption_trend=self._ai_adoption_trend(),
+            ai_accepted_lines_trend=self._ai_accepted_lines_trend(),
+            user_issue_trend=self._user_issue_trend(),
+            user_issues_by_type=self._user_issues_by_type(),
+        )
+
+    def _top_tools(self) -> list[ToolCallTopItem]:
+        rows = [
+            ("代码补全", 245_800),
+            ("代码解释", 186_400),
+            ("生成单测", 142_300),
+            ("生成注释", 98_700),
+            ("重构建议", 76_500),
+            ("错误诊断", 64_200),
+            ("提交信息生成", 48_900),
+            ("文档生成", 32_100),
+            ("代码审查", 28_400),
+            ("API 查询", 15_600),
+        ]
+        return [ToolCallTopItem(tool_name=r[0], call_count=r[1]) for r in rows]
+
+    def _tool_call_trend(self) -> list[ToolCallTrendPoint]:
+        dates = [
+            "04-21","04-22","04-23","04-24","04-25","04-26","04-27","04-28","04-29","04-30",
+            "05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10",
+            "05-11","05-12","05-13","05-14","05-15","05-16","05-17","05-18","05-19","05-20",
+        ]
+        values = [21000,23500,22800,26100,24200,23800,25500,26900,28100,26400,27300,28600,27900,26800,29200,28100,29500,30800,28700,27600,29900,26200,28400,31100,32500,29800,31600,30400,29100,28500]
+        return [ToolCallTrendPoint(date=d, value=v) for d, v in zip(dates, values)]
+
+    def _ai_adoption_trend(self) -> list[AiAdoptionTrendPoint]:
+        dates = [
+            "04-21","04-22","04-23","04-24","04-25","04-26","04-27","04-28","04-29","04-30",
+            "05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10",
+            "05-11","05-12","05-13","05-14","05-15","05-16","05-17","05-18","05-19","05-20",
+        ]
+        values = [71.2,72.5,71.8,73.4,72.9,73.8,74.2,73.5,75.1,74.6,75.3,76.1,75.7,76.4,77.0,76.8,77.5,78.1,77.6,78.4,78.9,78.2,79.1,79.6,80.2,79.8,80.5,80.1,81.0,78.5]
+        return [AiAdoptionTrendPoint(date=d, value=v) for d, v in zip(dates, values)]
+
+    def _ai_accepted_lines_trend(self) -> list[AiAcceptedLinesTrendPoint]:
+        dates = [
+            "04-21","04-22","04-23","04-24","04-25","04-26","04-27","04-28","04-29","04-30",
+            "05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10",
+            "05-11","05-12","05-13","05-14","05-15","05-16","05-17","05-18","05-19","05-20",
+        ]
+        values = [32000,35100,33800,38200,36100,35500,37400,39100,40800,38700,39900,41600,40700,39400,42300,41200,42800,44100,42100,40900,43500,39800,41900,44800,46200,43600,45300,44200,42900,41500]
+        return [AiAcceptedLinesTrendPoint(date=d, value=v) for d, v in zip(dates, values)]
+
+    def _user_issue_trend(self) -> list[UserIssueTrendPoint]:
+        dates = [
+            "04-21","04-22","04-23","04-24","04-25","04-26","04-27","04-28","04-29","04-30",
+            "05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10",
+            "05-11","05-12","05-13","05-14","05-15","05-16","05-17","05-18","05-19","05-20",
+        ]
+        values = [14,16,13,18,15,14,17,19,21,16,18,20,17,15,22,19,21,23,20,18,24,21,22,25,27,23,26,24,22,20]
+        return [UserIssueTrendPoint(date=d, value=v) for d, v in zip(dates, values)]
+
+    def _user_issues_by_type(self) -> list[UserIssueByType]:
+        rows = [
+            ("功能咨询", 98),
+            ("Bug 反馈", 76),
+            ("使用障碍", 62),
+            ("需求建议", 58),
+            ("其他", 34),
+        ]
+        return [UserIssueByType(issue_type=r[0], count=r[1]) for r in rows]
 
     def _cost_trend(self) -> list[CostTrendPoint]:
         dates = [
