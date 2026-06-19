@@ -9,7 +9,6 @@ import type {
   FilterOptions,
   MergeTrendPoint,
   MrPageResponse,
-  PduMergeStats,
   RepoMergeStats,
 } from "../types";
 
@@ -171,10 +170,10 @@ export function CodeMergePage({ onUpdatedAt }: { onUpdatedAt: (t: string) => voi
             <article className="panel">
               <div className="panel-header">
                 <h2>
-                  PDU 代码行数分布<span className="info-dot">i</span>
+                  AI MR代码入库占比趋势<span className="info-dot">i</span>
                 </h2>
               </div>
-              <ReactECharts option={pduBarOption(overview.pdu_breakdown)} notMerge style={{ height: 220 }} />
+              <ReactECharts option={aiMrRatioOption(overview.trend)} notMerge style={{ height: 220 }} />
             </article>
             <article className="panel">
               <div className="panel-header">
@@ -471,28 +470,22 @@ function baseTextStyle() {
   return { fontFamily: "Inter, Microsoft YaHei, system-ui", color: "#24324a" };
 }
 
-function pduBarOption(pduBreakdown: PduMergeStats[]) {
+function aiMrRatioOption(trend: MergeTrendPoint[]) {
   return {
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
-    legend: { data: ["AI代码行", "非AI代码行"], bottom: 0, textStyle: baseTextStyle() },
-    grid: { left: 90, right: 20, top: 20, bottom: 36 },
+    grid: { left: 48, right: 20, top: 36, bottom: 42 },
+    tooltip: { trigger: "axis" },
     textStyle: baseTextStyle(),
-    xAxis: { type: "value" },
-    yAxis: { type: "category", data: pduBreakdown.map((d) => d.pdu) },
+    xAxis: { type: "category", data: trend.map((d) => d.date), axisTick: { show: false } },
+    yAxis: { type: "value", name: "%", min: 0, max: 50, splitLine: { lineStyle: { color: "#f0dada" } } },
     series: [
       {
-        name: "非AI代码行",
-        type: "bar",
-        stack: "total",
-        data: pduBreakdown.map((d) => d.total_lines - d.ai_lines),
-        itemStyle: { color: "#e8edf5" },
-      },
-      {
-        name: "AI代码行",
-        type: "bar",
-        stack: "total",
-        data: pduBreakdown.map((d) => d.ai_lines),
-        itemStyle: { color: "#256ff6" },
+        data: trend.map((d) => d.ai_ratio),
+        type: "line",
+        smooth: true,
+        symbolSize: 6,
+        areaStyle: { color: "rgba(238, 51, 66, .10)" },
+        lineStyle: { width: 3, color: "#ef3445" },
+        itemStyle: { color: "#ef3445" },
       },
     ],
   };
