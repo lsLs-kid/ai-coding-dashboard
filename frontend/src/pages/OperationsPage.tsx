@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   BarChart3,
   Bot,
@@ -24,10 +24,19 @@ export function OperationsPage({ onUpdatedAt }: { onUpdatedAt: (t: string) => vo
   const [overview, setOverview] = useState<OperationsOverview | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     void bootstrap();
   }, []);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    void query(filters);
+  }, [filters]);
 
   async function bootstrap() {
     setIsLoading(true);
@@ -61,8 +70,6 @@ export function OperationsPage({ onUpdatedAt }: { onUpdatedAt: (t: string) => vo
     }
   }
 
-  const activeFilters = filters;
-
   return (
     <>
       <header className="page-header">
@@ -76,9 +83,8 @@ export function OperationsPage({ onUpdatedAt }: { onUpdatedAt: (t: string) => vo
         {filterOptions ? (
           <FilterGrid
             options={filterOptions}
-            filters={activeFilters}
+            filters={filters}
             onChange={setFilters}
-            onQuery={() => query(filters)}
           />
         ) : (
           <div className="filter-skeleton">筛选项加载中...</div>
@@ -155,12 +161,10 @@ function FilterGrid({
   options,
   filters,
   onChange,
-  onQuery,
 }: {
   options: FilterOptions;
   filters: DashboardFilters;
   onChange: (filters: DashboardFilters) => void;
-  onQuery: () => void;
 }) {
   const fields = [
     ["时间范围", "date_range", options.date_ranges],
@@ -192,9 +196,6 @@ function FilterGrid({
           <ChevronDown size={14} />
         </label>
       ))}
-      <button className="query-button" onClick={onQuery}>
-        查询
-      </button>
     </div>
   );
 }
@@ -280,7 +281,7 @@ function lineTrendOption(dates: string[], values: number[], color: string, unit?
         smooth: true,
         symbol: "none",
         lineStyle: { color, width: 2 },
-        areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color }, { offset: 1, color: "rgba(0,0,0,0)" }] } },
+        areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color }, { offset: 1, color: color.replace('rgb', 'rgba').replace(')', ', 0.05)') }] } },
       },
     ],
   };
