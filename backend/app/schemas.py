@@ -138,3 +138,84 @@ class ExportReportResponse(BaseModel):
     report_id: str
     status: Literal["mocked", "queued", "ready"]
     message: str
+
+
+# ── Code Merge Analysis ─────────────────────────────────────────────────────
+
+class CodeMergeFilters(DashboardFilters):
+    ai_ratio_threshold: Literal[30, 50, 70] = 50
+
+
+class CodeMergeKpi(BaseModel):
+    total_ai_lines: int
+    total_lines: int
+    overall_ai_ratio: float
+    total_mrs: int
+    ai_assisted_mrs: int
+    ai_assisted_ratio: float
+    total_repos: int
+    ai_lines_change: str
+    ai_ratio_change: str
+    mr_count_change: str
+    ai_assisted_ratio_change: str
+
+
+class PduMergeStats(BaseModel):
+    pdu: str
+    total_lines: int
+    ai_lines: int
+    ai_ratio: float
+    mr_count: int
+    active_contributors: int
+
+
+class MergeTrendPoint(BaseModel):
+    date: str
+    total_lines: int
+    ai_lines: int
+    ai_ratio: float
+    mr_count: int
+
+
+class RepoMergeStats(BaseModel):
+    repository: str
+    mr_count: int
+    total_lines: int
+    ai_lines: int
+    ai_ratio: float
+
+
+class ContributorMergeStats(BaseModel):
+    name: str
+    pdu: str
+    mr_count: int
+    total_lines: int
+    ai_lines: int
+    ai_ratio: float
+
+
+class CodeMergeOverview(BaseModel):
+    kpis: CodeMergeKpi
+    pdu_breakdown: list[PduMergeStats]
+    trend: list[MergeTrendPoint]
+    top_repos: list[RepoMergeStats]
+    contributors: list[ContributorMergeStats]
+
+
+class MrPageRequest(BaseModel):
+    date_range: str = "last_30_days"
+    granularity: Literal["day", "week", "month"] = "day"
+    pdu: str = "all"
+    lm_team: str = "all"
+    ai_ratio_threshold: Literal[30, 50, 70] = 50
+    page: int = 1
+    page_size: int = 20
+    sort_by: str = "merged_at"
+    sort_order: Literal["asc", "desc"] = "desc"
+
+
+class MrPageResponse(BaseModel):
+    total: int
+    page: int
+    page_size: int
+    items: list[MrDetail]
