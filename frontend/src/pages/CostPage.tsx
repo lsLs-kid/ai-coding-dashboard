@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { BarChart3, ChevronDown, Coins, Loader2, TrendingUp, Users } from "lucide-react";
 import ReactECharts from "echarts-for-react";
-import { defaultCostFilters, getCostTokens, getCostOverview, getFilterOptions } from "../api";
+import { defaultCostFilters, getCostTokens, getCostOverview, getFilterOptions, COST_TYPE_MAP } from "../api";
 import type {
   CostFilters,
   CostOverview,
@@ -19,12 +19,6 @@ const costTypeOptions = [
   { label: "Input Token", value: "input" as const },
   { label: "Output Token", value: "output" as const },
 ];
-
-const COST_TYPE_MAP: Record<CostFilters["cost_type"], 0 | 1 | 2> = {
-  total: 0,
-  input: 1,
-  output: 2,
-};
 
 export function CostPage({ onUpdatedAt }: { onUpdatedAt: (t: string) => void }) {
   const [filters, setFilters] = useState<CostFilters>(defaultCostFilters);
@@ -76,6 +70,7 @@ export function CostPage({ onUpdatedAt }: { onUpdatedAt: (t: string) => void }) 
       ]);
       setOverview(ovData);
       setTokens(tokData);
+      onUpdatedAt(new Date().toLocaleString("zh-CN", { hour12: false }).replace(/\//g, "-"));
     } catch (err) {
       setError(err instanceof Error ? err.message : "查询失败");
     } finally {

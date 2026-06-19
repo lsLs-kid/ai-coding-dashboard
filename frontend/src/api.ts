@@ -105,7 +105,7 @@ export const defaultCostFilters: CostFilters = {
   cost_type: "total",
 };
 
-const COST_TYPE_MAP: Record<CostFilters["cost_type"], 0 | 1 | 2> = {
+export const COST_TYPE_MAP: Record<CostFilters["cost_type"], 0 | 1 | 2> = {
   total: 0,
   input: 1,
   output: 2,
