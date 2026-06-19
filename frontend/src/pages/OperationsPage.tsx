@@ -100,7 +100,7 @@ export function OperationsPage({ onUpdatedAt }: { onUpdatedAt: (t: string) => vo
         </div>
       ) : overview ? (
         <>
-          <section className="kpi-grid">
+          <section className="operations-kpi-grid">
             <KpiCard
               label="AI 采纳率"
               value={`${overview.kpis.ai_adoption_rate.toFixed(1)}%`}
