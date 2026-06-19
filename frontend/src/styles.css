@@ -592,3 +592,45 @@ td {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* ── Code Merge Analysis ──────────────────────────────────────────────────── */
+
+.codemerge-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.codemerge-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.codemerge-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  align-items: end;
+}
+
+.th-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.th-sortable:hover {
+  background: #edf2f9;
+}
+
+@media (max-width: 1500px) {
+  .codemerge-kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .codemerge-chart-grid {
+    grid-template-columns: 1fr;
+  }
+}
