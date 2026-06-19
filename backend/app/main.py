@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.codemerge_routes import router as codemerge_router
 from app.api.routes import router as dashboard_router
 from app.core.config import get_settings
 
@@ -18,6 +19,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(dashboard_router, prefix=settings.api_prefix)
+    app.include_router(codemerge_router, prefix=settings.api_prefix)
 
     @app.get("/health", tags=["system"])
     def health() -> dict[str, str]:
