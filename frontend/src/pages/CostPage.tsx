@@ -88,6 +88,7 @@ export function CostPage({ onUpdatedAt }: { onUpdatedAt: (t: string) => void }) 
         page_size: 20,
       });
       setTokens(tokData);
+      onUpdatedAt(new Date().toLocaleString("zh-CN", { hour12: false }).replace(/\//g, "-"));
     } catch (err) {
       setError(err instanceof Error ? err.message : "加载失败");
     } finally {

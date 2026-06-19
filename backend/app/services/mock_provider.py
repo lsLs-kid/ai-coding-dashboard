@@ -268,6 +268,12 @@ class MockDashboardDataProvider(DashboardDataProvider):
         return [MrRatioBucket(label=k, count=v) for k, v in buckets.items()]
 
     def get_cost_overview(self, filters: CostFilters) -> CostOverview:
+        """Return cost analysis KPIs and charts.
+
+        Notes: mock returns static KPI values; real provider must apply
+        date_range, pdu, lm_team, user, terminal_type, client_version,
+        ide_type, model, and cost_type filters.
+        """
         return CostOverview(
             kpis=CostKpi(
                 total_tokens=42_860_000,
@@ -285,6 +291,12 @@ class MockDashboardDataProvider(DashboardDataProvider):
         )
 
     def get_cost_tokens(self, request: TokenPageRequest) -> TokenPageResponse:
+        """Return paginated, sorted token detail list.
+
+        Notes: mock applies pdu, lm_team, user, model filters and
+        server-side sorting/pagination; real provider should also apply
+        date_range and cost_type filters.
+        """
         all_tokens = self._token_list()
         if request.pdu != "all":
             all_tokens = [t for t in all_tokens if t.pdu == request.pdu]

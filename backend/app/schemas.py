@@ -272,7 +272,7 @@ class TokenPageRequest(BaseModel):
     client_version: str = "all"
     ide_type: str = "all"
     model: str = "all"
-    cost_type: int = 0  # 0=total, 1=input, 2=output; int for GET query coercion
+    cost_type: int = Field(default=0, ge=0, le=2)  # 0=total, 1=input, 2=output; int for GET query coercion
     page: int = 1
     page_size: int = 20
     sort_by: str = "date"
