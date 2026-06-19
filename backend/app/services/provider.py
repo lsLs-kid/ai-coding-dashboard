@@ -12,6 +12,7 @@ from app.schemas import (
     MrDetail,
     MrPageRequest,
     MrPageResponse,
+    OperationsOverview,
     TokenDetail,
     TokenPageRequest,
     TokenPageResponse,
@@ -64,4 +65,8 @@ class DashboardDataProvider(ABC):
 
     @abstractmethod
     def get_cost_tokens(self, request: TokenPageRequest) -> TokenPageResponse:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_operations_overview(self, filters: DashboardFilters) -> OperationsOverview:
         raise NotImplementedError
