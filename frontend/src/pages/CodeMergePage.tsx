@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Box, ChevronDown, Code2, Database, Loader2, Users } from "lucide-react";
+import { BarChart3, Box, ChevronDown, Code2, Database, Loader2 } from "lucide-react";
 import ReactECharts from "echarts-for-react";
 import { defaultCodeMergeFilters, getCodeMergeMrs, getCodeMergeOverview, getFilterOptions } from "../api";
 import type {
@@ -45,7 +45,7 @@ export function CodeMergePage({ onUpdatedAt }: { onUpdatedAt: (t: string) => voi
       setFilterOptions(options);
       setOverview(ovData);
       setMrs(mrData);
-      onUpdatedAt("2025-05-20 10:30");
+      onUpdatedAt(new Date().toLocaleString("zh-CN", { hour12: false }).replace(/\//g, "-"));
     } catch (err) {
       setError(err instanceof Error ? err.message : "加载失败");
     } finally {
