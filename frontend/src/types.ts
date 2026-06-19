@@ -286,3 +286,56 @@ export interface TokenPageResponse {
   page_size: number;
   items: TokenDetail[];
 }
+
+// ── Operations Analysis ─────────────────────────────────────────────────────
+
+export interface OperationsKpi {
+  ai_adoption_rate: number;
+  ai_adoption_rate_change: string;
+  ai_accepted_lines: number;
+  ai_accepted_lines_change: string;
+  total_tool_calls: number;
+  total_tool_calls_change: string;
+  total_user_issues: number;
+  total_user_issues_change: string;
+}
+
+export interface ToolCallTopItem {
+  tool_name: string;
+  call_count: number;
+}
+
+export interface ToolCallTrendPoint {
+  date: string;
+  value: number;
+}
+
+export interface AiAdoptionTrendPoint {
+  date: string;
+  value: number;
+}
+
+export interface AiAcceptedLinesTrendPoint {
+  date: string;
+  value: number;
+}
+
+export interface UserIssueTrendPoint {
+  date: string;
+  value: number;
+}
+
+export interface UserIssueByType {
+  issue_type: string;
+  count: number;
+}
+
+export interface OperationsOverview {
+  kpis: OperationsKpi;
+  top_tools: ToolCallTopItem[];
+  tool_call_trend: ToolCallTrendPoint[];
+  ai_adoption_trend: AiAdoptionTrendPoint[];
+  ai_accepted_lines_trend: AiAcceptedLinesTrendPoint[];
+  user_issue_trend: UserIssueTrendPoint[];
+  user_issues_by_type: UserIssueByType[];
+}
