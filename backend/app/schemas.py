@@ -207,7 +207,7 @@ class MrPageRequest(BaseModel):
     granularity: Literal["day", "week", "month"] = "day"
     pdu: str = "all"
     lm_team: str = "all"
-    ai_ratio_threshold: Literal[30, 50, 70] = 50
+    ai_ratio_threshold: int = 50  # int (not Literal) so GET query string "50" coerces correctly
     page: int = 1
     page_size: int = 20
     sort_by: str = "merged_at"
