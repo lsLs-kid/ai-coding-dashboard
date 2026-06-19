@@ -284,3 +284,56 @@ class TokenPageResponse(BaseModel):
     page: int
     page_size: int
     items: list[TokenDetail]
+
+
+# ── Operations Analysis ─────────────────────────────────────────────────────
+
+class OperationsKpi(BaseModel):
+    ai_adoption_rate: float
+    ai_adoption_rate_change: str
+    ai_accepted_lines: int
+    ai_accepted_lines_change: str
+    total_tool_calls: int
+    total_tool_calls_change: str
+    total_user_issues: int
+    total_user_issues_change: str
+
+
+class ToolCallTopItem(BaseModel):
+    tool_name: str
+    call_count: int
+
+
+class ToolCallTrendPoint(BaseModel):
+    date: str
+    value: int
+
+
+class AiAdoptionTrendPoint(BaseModel):
+    date: str
+    value: float
+
+
+class AiAcceptedLinesTrendPoint(BaseModel):
+    date: str
+    value: int
+
+
+class UserIssueTrendPoint(BaseModel):
+    date: str
+    value: int
+
+
+class UserIssueByType(BaseModel):
+    issue_type: str
+    count: int
+
+
+class OperationsOverview(BaseModel):
+    kpis: OperationsKpi
+    top_tools: list[ToolCallTopItem]
+    tool_call_trend: list[ToolCallTrendPoint]
+    ai_adoption_trend: list[AiAdoptionTrendPoint]
+    ai_accepted_lines_trend: list[AiAcceptedLinesTrendPoint]
+    user_issue_trend: list[UserIssueTrendPoint]
+    user_issues_by_type: list[UserIssueByType]
