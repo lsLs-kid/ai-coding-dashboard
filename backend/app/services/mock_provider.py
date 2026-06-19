@@ -2,6 +2,10 @@ from app.schemas import (
     CodeMergeFilters,
     CodeMergeKpi,
     CodeMergeOverview,
+    CostFilters,
+    CostKpi,
+    CostOverview,
+    CostTrendPoint,
     DashboardFilters,
     DashboardOverview,
     ExportReportResponse,
@@ -10,15 +14,19 @@ from app.schemas import (
     Insight,
     KpiMetric,
     MergeTrendPoint,
+    ModelCostStats,
     MrDetail,
     MrPageRequest,
     MrPageResponse,
     MrRatioBucket,
+    PduCostStats,
     PduMergeStats,
     QuadrantPoint,
     RankingRow,
     RepoMergeStats,
     TokenDetail,
+    TokenPageRequest,
+    TokenPageResponse,
     TrendPoint,
     UserDetail,
 )
@@ -121,11 +129,11 @@ class MockDashboardDataProvider(DashboardDataProvider):
 
     def get_tokens(self, filters: DashboardFilters) -> list[TokenDetail]:
         rows = [
-            ("tk-001", "2025-05-20", "张三", "MiniMax-M2.7", 423000, 326000, 749000, "trace_a19f", 200),
-            ("tk-002", "2025-05-20", "李四", "MiniMax-M2.7", 351000, 224000, 575000, "trace_b27e", 200),
-            ("tk-003", "2025-05-19", "王五", "DeepSeek-V3", 284000, 189000, 473000, "trace_c38a", 200),
+            ("tk-001", "2025-05-20", "张三", "无线PDU", "架构与算法LM", "MiniMax-M2.7", 423000, 326000, 749000, "trace_a19f", 200),
+            ("tk-002", "2025-05-20", "李四", "软件PDU", "软件平台LM", "MiniMax-M2.7", 351000, 224000, 575000, "trace_b27e", 200),
+            ("tk-003", "2025-05-19", "王五", "协议栈PDU", "协议栈LM", "DeepSeek-V3", 284000, 189000, 473000, "trace_c38a", 200),
         ]
-        return [TokenDetail(id=r[0], date=r[1], user=r[2], model=r[3], input_tokens=r[4], output_tokens=r[5], total_tokens=r[6], trace_id=r[7], status_code=r[8]) for r in rows]
+        return [TokenDetail(id=r[0], date=r[1], user=r[2], pdu=r[3], lm_team=r[4], model=r[5], input_tokens=r[6], output_tokens=r[7], total_tokens=r[8], trace_id=r[9], status_code=r[10]) for r in rows]
 
     def export_report(self, filters: DashboardFilters) -> ExportReportResponse:
         return ExportReportResponse(report_id="mock-report-20250520-1030", status="mocked", message="Mock report export accepted. Replace this provider method with a real export job.")
@@ -258,6 +266,109 @@ class MockDashboardDataProvider(DashboardDataProvider):
             idx = min(int(mr.ai_mr_ratio // 10), 9)
             buckets[f"{idx * 10}–{(idx + 1) * 10}%"] += 1
         return [MrRatioBucket(label=k, count=v) for k, v in buckets.items()]
+
+    def get_cost_overview(self, filters: CostFilters) -> CostOverview:
+        return CostOverview(
+            kpis=CostKpi(
+                total_tokens=42_860_000,
+                input_tokens=25_716_000,
+                output_tokens=17_144_000,
+                per_user_tokens=33_814.0,
+                total_tokens_change="+18.7%",
+                input_tokens_change="+21.3%",
+                output_tokens_change="+15.1%",
+                per_user_tokens_change="+12.4%",
+            ),
+            trend=self._cost_trend(),
+            model_distribution=self._model_cost_distribution(),
+            top_pdus=self._top_pdu_cost(),
+        )
+
+    def get_cost_tokens(self, request: TokenPageRequest) -> TokenPageResponse:
+        all_tokens = self._token_list()
+        if request.pdu != "all":
+            all_tokens = [t for t in all_tokens if t.pdu == request.pdu]
+        if request.lm_team != "all":
+            all_tokens = [t for t in all_tokens if t.lm_team == request.lm_team]
+        if request.user != "all":
+            all_tokens = [t for t in all_tokens if t.user == request.user]
+        if request.model != "all":
+            all_tokens = [t for t in all_tokens if t.model == request.model]
+        sort_fields = {
+            "date": lambda t: t.date,
+            "input_tokens": lambda t: t.input_tokens,
+            "output_tokens": lambda t: t.output_tokens,
+            "total_tokens": lambda t: t.total_tokens,
+        }
+        key_fn = sort_fields.get(request.sort_by, sort_fields["date"])
+        all_tokens.sort(key=key_fn, reverse=(request.sort_order == "desc"))
+        total = len(all_tokens)
+        start = (request.page - 1) * request.page_size
+        return TokenPageResponse(
+            total=total,
+            page=request.page,
+            page_size=request.page_size,
+            items=all_tokens[start : start + request.page_size],
+        )
+
+    def _cost_trend(self) -> list[CostTrendPoint]:
+        dates = [
+            "04-21","04-22","04-23","04-24","04-25","04-26","04-27","04-28","04-29","04-30",
+            "05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10",
+            "05-11","05-12","05-13","05-14","05-15","05-16","05-17","05-18","05-19","05-20",
+        ]
+        input_tokens =  [980,1120,1050,1280, 990, 940,1100,1220,1350,1180,1260,1380,1320,1150,1420,1280,1390,1450,1310,1240,1410,1100,1340,1560,1680,1440,1620,1550,1460,1380]
+        output_tokens = [620, 780, 700, 860, 650, 610, 730, 800, 890, 760, 840, 920, 880, 770, 960, 860, 940, 980, 870, 820, 950, 720, 880,1020,1100, 940,1060,1020, 960, 900]
+        return [
+            CostTrendPoint(date=d, input_tokens=i * 1000, output_tokens=o * 1000, total_tokens=(i + o) * 1000)
+            for d, i, o in zip(dates, input_tokens, output_tokens)
+        ]
+
+    def _model_cost_distribution(self) -> list[ModelCostStats]:
+        rows = [
+            ("MiniMax-M2.7", 15_430_000, 10_286_000),
+            ("DeepSeek-V3",  10_286_000, 6_858_000),
+        ]
+        return [
+            ModelCostStats(model=r[0], input_tokens=r[1], output_tokens=r[2], total_tokens=r[1] + r[2])
+            for r in rows
+        ]
+
+    def _top_pdu_cost(self) -> list[PduCostStats]:
+        rows = [
+            ("无线PDU", 18_540_000),
+            ("软件PDU", 12_360_000),
+            ("协议栈PDU", 7_890_000),
+            ("驱动PDU", 3_270_000),
+        ]
+        return [PduCostStats(pdu=r[0], total_tokens=r[1]) for r in rows]
+
+    def _token_list(self) -> list[TokenDetail]:
+        models = ["MiniMax-M2.7", "DeepSeek-V3"]
+        pdus = ["无线PDU", "软件PDU", "协议栈PDU", "驱动PDU", "测试PDU"]
+        teams = ["架构与算法LM", "软件平台LM", "协议栈LM", "驱动开发LM", "测试验证LM"]
+        users = ["张三", "李四", "王五", "赵六", "孙七", "周八", "吴九", "郑十"]
+        rows = []
+        for i in range(60):
+            idx = i % 5
+            base = 300000 - i * 3500
+            ratio = 0.6 if i % 3 == 0 else 0.55 if i % 3 == 1 else 0.5
+            inp = int(base * ratio)
+            out = int(base * (1 - ratio))
+            rows.append(TokenDetail(
+                id=f"tk-{i + 1:03d}",
+                date=f"2025-05-{max(1, 20 - i // 6):02d}",
+                user=users[i % 8],
+                pdu=pdus[idx],
+                lm_team=teams[idx],
+                model=models[i % 2],
+                input_tokens=inp,
+                output_tokens=out,
+                total_tokens=inp + out,
+                trace_id=f"trace_{i:04d}",
+                status_code=200,
+            ))
+        return rows
 
     def _mr_list(self) -> list[MrDetail]:
         pdus    = ["无线PDU",   "软件PDU",   "协议栈PDU", "驱动PDU",   "测试PDU"]
