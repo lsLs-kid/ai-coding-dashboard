@@ -8,8 +8,8 @@ router = APIRouter(prefix="/operations", tags=["operations"])
 
 
 @router.post("/overview", response_model=OperationsOverview)
-def get_operations_overview(
+async def get_operations_overview(
     filters: DashboardFilters,
     provider: DashboardDataProvider = Depends(get_data_provider),
 ) -> OperationsOverview:
-    return provider.get_operations_overview(filters)
+    return await provider.get_operations_overview(filters)

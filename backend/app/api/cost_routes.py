@@ -10,16 +10,16 @@ router = APIRouter(prefix="/cost", tags=["cost"])
 
 
 @router.post("/overview", response_model=CostOverview)
-def get_cost_overview(
+async def get_cost_overview(
     filters: CostFilters,
     provider: DashboardDataProvider = Depends(get_data_provider),
 ) -> CostOverview:
-    return provider.get_cost_overview(filters)
+    return await provider.get_cost_overview(filters)
 
 
 @router.get("/tokens", response_model=TokenPageResponse)
-def get_cost_tokens(
+async def get_cost_tokens(
     request: Annotated[TokenPageRequest, Depends()],
     provider: DashboardDataProvider = Depends(get_data_provider),
 ) -> TokenPageResponse:
-    return provider.get_cost_tokens(request)
+    return await provider.get_cost_tokens(request)
