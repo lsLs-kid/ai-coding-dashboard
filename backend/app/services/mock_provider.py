@@ -112,9 +112,9 @@ class MockDashboardDataProvider(DashboardDataProvider):
             rankings=self._rankings(),
             quadrant=self._quadrant(),
             insights=self._insights(),
-            users=self.get_users(filters),
-            mrs=self.get_mrs(filters),
-            tokens=self.get_tokens(filters),
+            users=await self.get_users(filters),
+            mrs=await self.get_mrs(filters),
+            tokens=await self.get_tokens(filters),
         )
 
     async def get_users(self, filters: DashboardFilters) -> list[UserDetail]:
