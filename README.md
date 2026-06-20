@@ -111,6 +111,54 @@ alembic current                                       # 查看当前状态
 alembic upgrade head --sql                            # 仅输出 SQL，不执行
 ```
 
+### 从 Mock 切换到真实数据库
+
+`sql_provider.py` 的 11 个方法目前全部委托给 mock。接入真实数据库后，**逐个替换方法**即可，路由和 Schema 无需改动。
+
+**当前模式（委托 mock）：**
+
+```python
+async def get_cost_overview(self, filters: CostFilters) -> CostOverview:
+    return await self._mock.get_cost_overview(filters)
+```
+
+**替换为真实查询：**
+
+```python
+from app.db.session import get_session_factory
+from sqlalchemy import select, func
+from app.models.events import TokenUsage
+
+async def get_cost_overview(self, filters: CostFilters) -> CostOverview:
+    async with get_session_factory()() as session:
+        result = await session.execute(
+            select(
+                TokenUsage.event_date,
+                func.sum(TokenUsage.input_tokens).label("input"),
+                func.sum(TokenUsage.output_tokens).label("output"),
+            )
+            .where(TokenUsage.event_date.between(start, end))
+            .group_by(TokenUsage.event_date)
+            .order_by(TokenUsage.event_date)
+        )
+        rows = result.all()
+        return CostOverview(
+            kpis=CostKpi(...),
+            trend=[CostTrendPoint(date=r.event_date, ...) for r in rows],
+            ...
+        )
+```
+
+**推荐替换顺序**（由简到繁）：
+
+1. `get_filter_options` — 只查维度表，无聚合
+2. `get_cost_tokens` / `get_codemerge_mrs` — 单表分页排序
+3. `get_operations_overview` — 两张事实表聚合
+4. `get_cost_overview` / `get_codemerge_overview` — 多表 join + 分布统计
+5. `get_overview` — 最多聚合项
+
+每替换一个方法即可重启验证，其余方法仍走 mock 不受影响。
+
 ## 本地运行
 
 ### 1. 启动后端

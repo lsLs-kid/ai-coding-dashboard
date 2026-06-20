@@ -45,9 +45,9 @@ There is currently no test runner, lint command, or formatter configured for the
 
 ### Data flow
 
-`App.tsx` (state) → `api.ts` (fetch) → FastAPI routes (`routes.py`) → `DashboardDataProvider` (abstract) → `MockDashboardDataProvider` (concrete).
+`App.tsx` (state) → `api.ts` (fetch) → FastAPI routes (async) → `DashboardDataProvider` (async ABC) → `MockDashboardDataProvider` or `SqlDashboardDataProvider`.
 
-The dashboard loads in two sequential calls: `getFilterOptions()` to populate filter dropdowns, then `getOverview(filters)` to fetch all KPI/chart/table data. Subsequent filter changes re-call `getOverview`.
+The dashboard loads in two sequential calls: `getFilterOptions()` to populate filter dropdowns, then `getOverview(filters)` to fetch all KPI/chart/table data. Subsequent filter changes re-call `getOverview`. All routes and provider methods are async — the SQL provider can directly `await` database queries.
 
 ### Backend
 
@@ -55,9 +55,9 @@ The dashboard loads in two sequential calls: `getFilterOptions()` to populate fi
 - `backend/app/core/config.py` — Pydantic-settings based config, read from `backend/.env` with `AICODING_` prefix.
 - `backend/app/api/routes.py` — Dashboard API routes under `/api/dashboard`. All endpoints receive a `DashboardDataProvider` via `Depends(get_data_provider)`.
 - `backend/app/dependencies.py` — Factory that selects the data provider based on `AICODING_DATA_PROVIDER`. Supported values: `mock` (in-memory mock data), `sql` (SQLAlchemy-backed, currently delegates to mock). This is the only file to edit when wiring in a new provider.
-- `backend/app/services/provider.py` — `DashboardDataProvider` abstract base class defining 11 methods. New real-world providers should subclass this without changing routes or schemas.
+- `backend/app/services/provider.py` — `DashboardDataProvider` abstract base class defining 11 async methods. New real-world providers should subclass this without changing routes or schemas.
 - `backend/app/services/mock_provider.py` — `MockDashboardDataProvider`, in-memory mock implementation.
-- `backend/app/services/sql_provider.py` — `SqlDashboardDataProvider`, skeleton that delegates all 11 methods to mock. Replace individual methods with real SQLAlchemy queries as data sources become available.
+- `backend/app/services/sql_provider.py` — `SqlDashboardDataProvider`, skeleton that delegates all 11 methods to mock. **This is the file to edit when switching from mock to real data** — replace individual methods with real SQLAlchemy async queries; routes and schemas stay unchanged.
 - `backend/app/schemas.py` — Pydantic request/response models shared with the frontend types. **Keep these in sync with `frontend/src/types.ts`.**
 - `backend/app/models/` — SQLAlchemy 2.0 ORM models (declarative, async). 9 tables: `pdu`, `lm_team`, `user` (dimension tables), `ai_model`, `repository` (reference tables), `token_usage`, `merge_request`, `tool_call`, `user_issue` (fact/event tables). ORM models are separate from API schemas — the former describe database structure, the latter describe API contracts.
 - `backend/app/db/` — Async database session management. `session.py` provides lazy-singleton `AsyncEngine`, `async_sessionmaker`, and `get_db()` FastAPI dependency.
