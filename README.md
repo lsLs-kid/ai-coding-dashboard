@@ -6,26 +6,30 @@
 
 - 后端：Python 3.11+、FastAPI、Pydantic、Uvicorn
 - 前端：React、TypeScript、Vite、ECharts、Lucide Icons
-- 数据：当前为 Mock 数据，统一封装在 `backend/app/services/mock_provider.py`
+- 数据：当前为 Mock 数据，已建立 PostgreSQL + SQLAlchemy 2.0 ORM 模型层（暂未对接真实库）
 
 ## 项目结构
 
 ```text
 backend/
   app/
-    api/routes.py              # API 路由
-    core/config.py             # 环境配置
-    services/provider.py       # 数据服务抽象接口
-    services/mock_provider.py  # Mock 数据实现，后续替换真实实现
-    schemas.py                 # 前后端 API 契约
-    main.py                    # FastAPI 应用入口
+    api/                        # API 路由
+    core/config.py              # 环境配置
+    models/                     # SQLAlchemy ORM 模型（9 张表）
+    db/session.py               # 异步数据库会话管理
+    services/provider.py        # 数据服务抽象接口
+    services/mock_provider.py   # Mock 数据实现
+    services/sql_provider.py    # SQL 数据提供者骨架
+    schemas.py                  # 前后端 API 契约
+    main.py                     # FastAPI 应用入口
+  alembic/                      # 数据库迁移
   requirements.txt
 frontend/
   src/
-    api.ts                     # 前端 API Client
-    App.tsx                    # 页面主实现
-    styles.css                 # 原型视觉样式
-    types.ts                   # 前端类型定义
+    api.ts                      # 前端 API Client
+    App.tsx                     # 页面主实现
+    styles.css                  # 原型视觉样式
+    types.ts                    # 前端类型定义
   package.json
   vite.config.ts
 ```
@@ -74,6 +78,38 @@ frontend/
 - CodeHub MR 数据：MR 总有效代码行、AI 生成并入库代码行、仓库、作者、合入时间
 - 组织映射表：`user_id -> PDU -> LM团队`
 - VersionPlan / AR 数据：后续补充 AR 维度指标
+
+## 数据库与迁移
+
+ORM 模型与 API Schema 严格分离，互不依赖。当前 `AICODING_DATA_PROVIDER=mock` 免数据库运行，设为 `sql` 则走 SQL 骨架（仍委托 mock）。
+
+**首次建库（有 PostgreSQL 时）：**
+
+```bash
+cd backend
+# 1. 创建数据库
+createdb aicoding
+
+# 2. 配置连接（backend/.env）
+# AICODING_DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/aicoding
+
+# 3. 执行迁移
+source .venv/bin/activate
+alembic upgrade head
+
+# 4. 启动
+AICODING_DATA_PROVIDER=sql uvicorn app.main:app --reload
+```
+
+**日常迁移：**
+
+```bash
+alembic revision --autogenerate -m "描述你的变更"  # 生成迁移文件
+alembic upgrade head                                  # 应用迁移
+alembic downgrade -1                                  # 回滚一步
+alembic current                                       # 查看当前状态
+alembic upgrade head --sql                            # 仅输出 SQL，不执行
+```
 
 ## 本地运行
 
@@ -136,6 +172,7 @@ pnpm build
 ```env
 AICODING_DATA_PROVIDER=mock
 AICODING_CORS_ORIGINS=["http://localhost:5173","http://127.0.0.1:5173"]
+AICODING_DATABASE_URL=postgresql+asyncpg://aicoding:aicoding@localhost:5432/aicoding
 ```
 
 前端 `.env` 示例见 `frontend/.env.example`。
