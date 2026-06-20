@@ -42,7 +42,7 @@ from app.services.provider import DashboardDataProvider
 
 
 class MockDashboardDataProvider(DashboardDataProvider):
-    def get_filter_options(self) -> FilterOptions:
+    async def get_filter_options(self) -> FilterOptions:
         return FilterOptions(
             date_ranges=[
                 FilterOption(label="近30天（04-21 ~ 05-20）", value="last_30_days"),
@@ -96,7 +96,7 @@ class MockDashboardDataProvider(DashboardDataProvider):
             ],
         )
 
-    def get_overview(self, filters: DashboardFilters) -> DashboardOverview:
+    async def get_overview(self, filters: DashboardFilters) -> DashboardOverview:
         return DashboardOverview(
             filters=filters,
             updated_at="2025-05-20 10:30",
@@ -117,7 +117,7 @@ class MockDashboardDataProvider(DashboardDataProvider):
             tokens=self.get_tokens(filters),
         )
 
-    def get_users(self, filters: DashboardFilters) -> list[UserDetail]:
+    async def get_users(self, filters: DashboardFilters) -> list[UserDetail]:
         rows = [
             ("u001", "张三", "无线", "架构与算法LM", "GUI", "v2.9.1", "VS Code", "2025-05-20 10:15", 128, 152.6, 18, 12842, "active"),
             ("u002", "李四", "PDU", "软件平台LM", "CLI", "v2.9.1", "JetBrains", "2025-05-20 10:08", 96, 98.3, 14, 8731, "active"),
@@ -127,7 +127,7 @@ class MockDashboardDataProvider(DashboardDataProvider):
         ]
         return [UserDetail(id=r[0], name=r[1], pdu=r[2], lm_team=r[3], terminal_type=r[4], client_version=r[5], ide_type=r[6], last_active_at=r[7], prompt_count=r[8], token_cost=r[9], mr_count=r[10], ai_lines=r[11], status=r[12]) for r in rows]
 
-    def get_mrs(self, filters: DashboardFilters) -> list[MrDetail]:
+    async def get_mrs(self, filters: DashboardFilters) -> list[MrDetail]:
         rows = [
             ("MR-10291", "wireless/baseband", "张三", "无线", "架构与算法LM", "2025-05-20 09:42", 34820, 12842, 36.9, "merged"),
             ("MR-10276", "platform/runtime", "李四", "PDU", "软件平台LM", "2025-05-19 18:21", 26320, 8731, 33.2, "merged"),
@@ -135,7 +135,7 @@ class MockDashboardDataProvider(DashboardDataProvider):
         ]
         return [MrDetail(mr_id=r[0], repository=r[1], author=r[2], pdu=r[3], lm_team=r[4], merged_at=r[5], total_lines=r[6], ai_lines=r[7], ai_mr_ratio=r[8], status=r[9]) for r in rows]
 
-    def get_tokens(self, filters: DashboardFilters) -> list[TokenDetail]:
+    async def get_tokens(self, filters: DashboardFilters) -> list[TokenDetail]:
         rows = [
             ("tk-001", "2025-05-20", "张三", "无线PDU", "架构与算法LM", "MiniMax-M2.7", 423000, 326000, 749000, "trace_a19f", 200),
             ("tk-002", "2025-05-20", "李四", "软件PDU", "软件平台LM", "MiniMax-M2.7", 351000, 224000, 575000, "trace_b27e", 200),
@@ -143,7 +143,7 @@ class MockDashboardDataProvider(DashboardDataProvider):
         ]
         return [TokenDetail(id=r[0], date=r[1], user=r[2], pdu=r[3], lm_team=r[4], model=r[5], input_tokens=r[6], output_tokens=r[7], total_tokens=r[8], trace_id=r[9], status_code=r[10]) for r in rows]
 
-    def export_report(self, filters: DashboardFilters) -> ExportReportResponse:
+    async def export_report(self, filters: DashboardFilters) -> ExportReportResponse:
         return ExportReportResponse(report_id="mock-report-20250520-1030", status="mocked", message="Mock report export accepted. Replace this provider method with a real export job.")
 
     def _trends(self) -> list[TrendPoint]:
@@ -181,7 +181,7 @@ class MockDashboardDataProvider(DashboardDataProvider):
             Insight(type="success", title="软件平台LM 连续 3 周上升", description="AI MR代码入库占比持续提升，建议复制经验。"),
         ]
 
-    def get_codemerge_overview(self, filters: CodeMergeFilters) -> CodeMergeOverview:
+    async def get_codemerge_overview(self, filters: CodeMergeFilters) -> CodeMergeOverview:
         # ai_assisted counts vary by threshold so the selector has visible effect
         threshold_data = {
             30: (1324, 71.7, "+8.2pp"),
@@ -215,7 +215,7 @@ class MockDashboardDataProvider(DashboardDataProvider):
             mr_ratio_distribution=self._mr_ratio_distribution(),
         )
 
-    def get_codemerge_mrs(self, request: MrPageRequest) -> MrPageResponse:
+    async def get_codemerge_mrs(self, request: MrPageRequest) -> MrPageResponse:
         all_mrs = self._mr_list()
         if request.pdu != "all":
             all_mrs = [m for m in all_mrs if m.pdu == request.pdu]
@@ -275,7 +275,7 @@ class MockDashboardDataProvider(DashboardDataProvider):
             buckets[f"{idx * 10}–{(idx + 1) * 10}%"] += 1
         return [MrRatioBucket(label=k, count=v) for k, v in buckets.items()]
 
-    def get_cost_overview(self, filters: CostFilters) -> CostOverview:
+    async def get_cost_overview(self, filters: CostFilters) -> CostOverview:
         """Return cost analysis KPIs and charts.
 
         Notes: mock returns static KPI values; real provider must apply
@@ -298,7 +298,7 @@ class MockDashboardDataProvider(DashboardDataProvider):
             top_pdus=self._top_pdu_cost(),
         )
 
-    def get_cost_tokens(self, request: TokenPageRequest) -> TokenPageResponse:
+    async def get_cost_tokens(self, request: TokenPageRequest) -> TokenPageResponse:
         """Return paginated, sorted token detail list.
 
         Notes: mock applies pdu, lm_team, user, model filters and
@@ -331,7 +331,7 @@ class MockDashboardDataProvider(DashboardDataProvider):
             items=all_tokens[start : start + request.page_size],
         )
 
-    def get_operations_overview(self, filters: DashboardFilters) -> OperationsOverview:
+    async def get_operations_overview(self, filters: DashboardFilters) -> OperationsOverview:
         return OperationsOverview(
             kpis=OperationsKpi(
                 ai_adoption_rate=78.5,

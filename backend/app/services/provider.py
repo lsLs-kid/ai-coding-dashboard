@@ -28,45 +28,45 @@ class DashboardDataProvider(ABC):
     """
 
     @abstractmethod
-    def get_filter_options(self) -> FilterOptions:
+    async def get_filter_options(self) -> FilterOptions:
         raise NotImplementedError
 
     @abstractmethod
-    def get_overview(self, filters: DashboardFilters) -> DashboardOverview:
+    async def get_overview(self, filters: DashboardFilters) -> DashboardOverview:
         raise NotImplementedError
 
     @abstractmethod
-    def get_users(self, filters: DashboardFilters) -> list[UserDetail]:
+    async def get_users(self, filters: DashboardFilters) -> list[UserDetail]:
         raise NotImplementedError
 
     @abstractmethod
-    def get_mrs(self, filters: DashboardFilters) -> list[MrDetail]:
+    async def get_mrs(self, filters: DashboardFilters) -> list[MrDetail]:
         raise NotImplementedError
 
     @abstractmethod
-    def get_tokens(self, filters: DashboardFilters) -> list[TokenDetail]:
+    async def get_tokens(self, filters: DashboardFilters) -> list[TokenDetail]:
         raise NotImplementedError
 
     @abstractmethod
-    def export_report(self, filters: DashboardFilters) -> ExportReportResponse:
+    async def export_report(self, filters: DashboardFilters) -> ExportReportResponse:
         raise NotImplementedError
 
     @abstractmethod
-    def get_codemerge_overview(self, filters: CodeMergeFilters) -> CodeMergeOverview:
+    async def get_codemerge_overview(self, filters: CodeMergeFilters) -> CodeMergeOverview:
         raise NotImplementedError
 
     @abstractmethod
-    def get_codemerge_mrs(self, request: MrPageRequest) -> MrPageResponse:
+    async def get_codemerge_mrs(self, request: MrPageRequest) -> MrPageResponse:
         raise NotImplementedError
 
     @abstractmethod
-    def get_cost_overview(self, filters: CostFilters) -> CostOverview:
+    async def get_cost_overview(self, filters: CostFilters) -> CostOverview:
         raise NotImplementedError
 
     @abstractmethod
-    def get_cost_tokens(self, request: TokenPageRequest) -> TokenPageResponse:
+    async def get_cost_tokens(self, request: TokenPageRequest) -> TokenPageResponse:
         raise NotImplementedError
 
     @abstractmethod
-    def get_operations_overview(self, filters: DashboardFilters) -> OperationsOverview:
+    async def get_operations_overview(self, filters: DashboardFilters) -> OperationsOverview:
         raise NotImplementedError
